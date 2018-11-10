@@ -17,4 +17,23 @@
   
 }
 
+.onUnload <- function(libname, pkgname){
+  # might want to assure that we do not leave any side effects
+  if(!is.null(getOption("jira_url", default = NULL))){
+   options("jira_url" = NULL)
+  }
+
+  if(!is.null(getOption("jira_user", default = NULL))){
+   options("jira_user" = NULL)
+  }
+
+  if(!is.null(getOption("jira_password", default = NULL))){
+   options("jira_password" = NULL)
+  }
+
+  if(!is.null(getOption("jira_verbose", default = NULL))){
+   options("jira_verbose" = NULL)
+  }
+}
+
 

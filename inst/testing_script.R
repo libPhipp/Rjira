@@ -41,7 +41,7 @@ if(FALSE){
   #### -------------------------------------------
   
   
-  devtools::install_github("awalker89/Rjira")
+  #devtools::install_github("awalker89/Rjira")
   
 
   issue <- create_issue()

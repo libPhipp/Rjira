@@ -178,17 +178,21 @@ post_issue <- function(  issue
   
   x <- issue$to_issue_list()
   
-  print(cat(RJSONIO::toJSON(x)))
+  print(cat(jsonlite::toJSON(x)))
   
   res <- POST(url = issue_url(jira_url = jira_url),
-              body = RJSONIO::toJSON(x),
+              body = jsonlite::toJSON(x),
               authenticate(user = jira_user, password = jira_password, "basic"),
               add_headers("Content-Type" = "application/json"),
               verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
   return(res)
   
@@ -223,13 +227,17 @@ assign_user <- function(issue
   url <- paste0(issue_url(jira_url = jira_url), issue, "/assignee")
   
   res <- PUT(url = url,
-             body = RJSONIO::toJSON(c("name" = user)),
+             body = jsonlite::toJSON(c("name" = user)),
              authenticate(user = jira_user, password = jira_password, "basic"),
              add_headers("Content-Type" = "application/json"),
              verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
   return(res)
   

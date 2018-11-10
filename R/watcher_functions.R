@@ -41,7 +41,11 @@ add_watcher <- function(issue
               verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
   
   # Responses - probalby get R to look at report the description
@@ -98,7 +102,11 @@ remove_watcher <- function(issue
                 verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
 }
 
@@ -140,9 +148,14 @@ get_watchers <- function(issue
   )
   
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+    res <- res$watchers
+  } else {
+    warning("Returning the response object - mime type was not application/json")
+  }
   
-  return(res$watchers)
+  return(res)
   
 }
 

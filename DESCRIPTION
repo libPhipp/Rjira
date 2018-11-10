@@ -1,13 +1,18 @@
-Package: jira
+Package: Rjira
 Type: Package
 Title: Jira API wrapper for R
-Version: 0.1.1
-Date: 2015-10-24
-Author: Alexander Walker
-Maintainer: Alexander Walker <Alexander.Walker1989@gmail.com>
+Version: 0.2.1
+Date: 2018-10-29
+Authors@R: c(person("Philip Herrmann", role=c("aut","ctb"),email="philip_herrmann@gmx.de"),
+             person("Alexander Walker", role=c("aut","cre"),email="Alexander.Walker1989@gmail.com"))
+Authors: Philip Herrmann, Alexander Walker
+Maintainer: Philip Herrmann <philip_herrmann@gmx.de>
 Description: Simplifies the use of the JIRA REST API from R
 License: GPL-3
 LazyData: TRUE
 Depends:
     httr
-   ,RJSONIO
+   ,jsonlite
+Suggests:
+    testthat
+RoxygenNote: 6.1.0

@@ -92,13 +92,17 @@ add_comment <- function(issue
   x <- list(body = comment)
   
   res <- POST(url = url,
-              body = RJSONIO::toJSON(x),
+              body = jsonlite::toJSON(x),
               authenticate(user = jira_user, password = jira_password, "basic"),
               add_headers("Content-Type" = "application/json"),
               verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
   return(res)
   
@@ -136,9 +140,14 @@ get_comments <- function(issue
              verbose(data_out = verbose, data_in = verbose, info = verbose)
   )
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+    res <- res$comments
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
-  return(res$comments)
+  return(res)
   
 }
 

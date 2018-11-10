@@ -67,7 +67,7 @@ jira_get <- function(url = url, user = user, password = password, verbose = verb
 jira_post <- function(x, url, user, password, verbose){
   
   POST(url = url,
-       body = RJSONIO::toJSON(x),
+       body = jsonlite::toJSON(x),
        authenticate(user = user, password = password, "basic"),
        add_headers("Content-Type" = "application/json"),
        verbose(data_out = verbose, data_in = verbose, info = verbose)

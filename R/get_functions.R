@@ -24,7 +24,11 @@ get_projects <- function(jira_url = getOption("jira_url")
   project_url <- paste(jira_url, "rest/api/2/project", sep = "/")
   res <- jira_get(url = project_url, user = jira_user, password = jira_password, verbose = verbose)
   
-  res <- content(res, as = "parsed")
+  if(http_type(res) == "application/json"){
+    res <- jsonlite::fromJSON(content(res, as = "text"))
+  } else{
+    warning("Returning the response object - mime type was not application/json")
+  }
   
   return(res)
   
@@ -62,6 +66,9 @@ get_projects <- function(jira_url = getOption("jira_url")
 #' 
 #' 
 get_issues <- function(user = NULL
+                       , max_results = NULL
+                       , start_at = NULL
+                       , content = NULL
                        , project_key = getOption("jira_project")
                        , jira_url = getOption("jira_url")
                        , jira_user = getOption("jira_user")
@@ -76,8 +83,21 @@ get_issues <- function(user = NULL
   
   if(is.null(jira_password))
     stop("jira_password is NULL")
+
   
   url <- search_url(jira_url = jira_url)
+  if(!is.null(content)){
+    #validate content perhaps. It may be
+    #
+    #*all - include all fields
+    #*navigable - include just navigable fields
+    #summary,comment - include just the summary and comments
+    #-comment - include everything except comments (the default is *all for get-issue)
+    #*all,-comment - include everything except comments
+
+    url <- paste0(url, sprintf('fields="%s"&', content))
+  }
+
   if(!is.null(project_key)){
     url <- paste0(url, sprintf('jql=project="%s"', project_key))
     if(!is.null(user))
@@ -86,12 +106,44 @@ get_issues <- function(user = NULL
   }else if(!is.null(user)){
     url <- paste0(url, sprintf('jql=assignee="%s"', project_key))
   }
-  
 
-  res <- jira_get(url = url, user = jira_user, password = jira_password, verbose = verbose)
-  res <- content(res, as = "parsed")
-  res <- res$issues
+  if(!is.numeric(start_at)){
+    start_at <- 0
+  }
   
+  if(!is.null(max_results)){
+    if(!is.numeric(max_results)){
+      stop("max_results has to be a positive integer.")
+    } else {
+      if(max_results > 50 ){
+        #we have to use the pagination to be sure. The maxResults parameter has been limited 
+        #and maybe even partially deactiveated by jira.
+
+        #if max_results if > some-threshold we'll have to loop here
+        url <- paste0(url, sprintf('&startAt=%i&maxResults=%i', start_at, max_results))
+
+        res <- jira_get(url = url, user = jira_user, password = jira_password, verbose = verbose)
+        if(http_type(res) == "application/json"){
+          res <- jsonlite::fromJSON(content(res, as = "text"))
+          warning(paste("Received", res$maxResults,"of total", res$total, "issues."))
+          res <- res$issues
+        } else{
+          warning("Returning the response object - mime type was not application/json")
+        }
+      }
+    }
+  } else {
+    #the 'max_results is not set' case
+      
+    res <- jira_get(url = url, user = jira_user, password = jira_password, verbose = verbose)
+    if(http_type(res) == "application/json"){
+      res <- jsonlite::fromJSON(content(res, as = "text"))
+      res <- res$issues
+    } else{
+      warning("Returning the response object - mime type was not application/json")
+    }
+
+  }
 
   
   return(res)
