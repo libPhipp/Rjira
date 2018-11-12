@@ -13,16 +13,10 @@
 #' @seealso \code{\link{search_url}}
 #' @examples
 #' get_projects()
-get_projects <- function(jira_url = getOption("jira_url")
-                         , jira_user = getOption("jira_user")
-                         , jira_password = getOption("jira_password")
-                         , verbose = getOption("jira_verbose")){
+get_projects <- function(con){
   
-  if(is.null(jira_url))
-    stop("jira_url is NULL")
   
-  project_url <- paste(jira_url, "rest/api/2/project", sep = "/")
-  res <- jira_get(url = project_url, user = jira_user, password = jira_password, verbose = verbose)
+  res <- jira_get(url = project_url(con), con)
   
   if(http_type(res) == "application/json"){
     res <- jsonlite::fromJSON(content(res, as = "text"))
@@ -31,7 +25,6 @@ get_projects <- function(jira_url = getOption("jira_url")
   }
   
   return(res)
-  
   
 }
 
@@ -65,27 +58,16 @@ get_projects <- function(jira_url = getOption("jira_url")
 #' }
 #' 
 #' 
-get_issues <- function(user = NULL
+get_issues <- function(con
+                       , user = NULL
                        , max_results = NULL
                        , start_at = NULL
                        , content = NULL
-                       , project_key = getOption("jira_project")
-                       , jira_url = getOption("jira_url")
-                       , jira_user = getOption("jira_user")
-                       , jira_password = getOption("jira_password")
-                       , verbose = getOption("jira_verbose")){
+                       , project_key = NULL
+                       ){
   
-  if(is.null(jira_url))
-    stop('jira_url is NULL. See getOption("jira_url")')
   
-  if(is.null(jira_user))
-    stop("jira_user is NULL")
-  
-  if(is.null(jira_password))
-    stop("jira_password is NULL")
-
-  
-  url <- search_url(jira_url = jira_url)
+  url <- search_url(con)
   if(!is.null(content)){
     #validate content perhaps. It may be
     #
@@ -122,7 +104,7 @@ get_issues <- function(user = NULL
         #if max_results if > some-threshold we'll have to loop here
         url <- paste0(url, sprintf('&startAt=%i&maxResults=%i', start_at, max_results))
 
-        res <- jira_get(url = url, user = jira_user, password = jira_password, verbose = verbose)
+        res <- jira_get(url = url, con)
         if(http_type(res) == "application/json"){
           res <- jsonlite::fromJSON(content(res, as = "text"))
           warning(paste("Received", res$maxResults,"of total", res$total, "issues."))
@@ -135,7 +117,7 @@ get_issues <- function(user = NULL
   } else {
     #the 'max_results is not set' case
       
-    res <- jira_get(url = url, user = jira_user, password = jira_password, verbose = verbose)
+    res <- jira_get(url = url, con)
     if(http_type(res) == "application/json"){
       res <- jsonlite::fromJSON(content(res, as = "text"))
       res <- res$issues
