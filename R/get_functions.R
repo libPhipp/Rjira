@@ -14,7 +14,7 @@
 #' @examples
 #' get_projects()
 get_projects <- function(con){
-  
+  stopifnot(is.Rjiracon(con))
   
   res <- jira_get(url = project_url(con), con)
   

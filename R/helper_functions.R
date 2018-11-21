@@ -21,18 +21,24 @@ jira <- function(scheme = c("http", "https"),
 
   # create list of server connection details
   jira_conn_detail <-
-    list(
-      scheme = match.arg(scheme, c("http", "https")),
-      host = host,
-      port = port,
-      user = user,
-      auth = authenticate(user = user, password = pass, "basic"),
-      verbose = verbose,
-      config = curl_options
-  )
+    structure(
+      list(
+        scheme = match.arg(scheme, c("http", "https")),
+        host = host,
+        port = port,
+        user = user,
+        auth = authenticate(user = user, password = pass, "basic"),
+        verbose = verbose,
+        config = curl_options
+      ),
+      class = "RjiraConnection"
+    )
+  
   invisible(jira_conn_detail)
 
 }
+
+is.Rjiracon <- function(x) inherits(x, "RjiraConnection")
 
 #' @name search_url
 #' @title Get jira search url
@@ -42,6 +48,7 @@ jira <- function(scheme = c("http", "https"),
 #' @examples
 #' search_url()
 search_url <-  function(con){
+  stopifnot(is.Rjiracon(con))
   
   search_url <- modify_url("",scheme=con$scheme, hostname = con$host,port = con$port, path = "rest/api/latest/search?")
   
@@ -60,6 +67,7 @@ search_url <-  function(con){
 #' @examples
 #' issue_url()
 issue_url <- function(con){
+  stopifnot(is.Rjiracon(con))
   
   issue_url <- modify_url("",scheme=con$scheme, hostname = con$host,port = con$port, path = "rest/api/latest/issue/")
   
@@ -75,8 +83,9 @@ issue_url <- function(con){
 #' @examples
 #' issue_url()
 project_url <- function(con){
+  stopifnot(is.Rjiracon(con))
   
-  project_url <- modify_url("",scheme=con$scheme, hostname = con$host,port = con$port, path = "rest/api/2/project")
+  project_url <- modify_url("",scheme=con$scheme, hostname = con$host,port = con$port, path = "rest/api/latest/project/")
   
   return(project_url)
   

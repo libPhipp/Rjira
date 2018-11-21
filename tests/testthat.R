@@ -1,3 +1,4 @@
 library(testthat)
-context("global")
+library(Rjira)
+
 test_check("Rjira")
