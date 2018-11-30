@@ -9,5 +9,5 @@ test_that("get_issues test max_results",{
 
 test_that("get_issues test con",{
   
-  expect_error(get_issues(max_results=2, start_at), "Argument \"con\"")
+  expect_error(get_issues(max_results=2, start_at = 2), "Argument \"con\"")
 })
