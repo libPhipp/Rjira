@@ -31,51 +31,64 @@ get_projects <- function(con){
 
 
 #' @name get_issues
-#' @title Get issues assigned to a user
+#' @title Get all issues matching the parameters
+#' @param con the RjiraConnection object
 #' @param user user to search for
-#' @param jira_url base JIRA url
-#' @param jira_user username for authentication
-#' @param jira_password password for authentication
-#' @return character vector of issues
+#' @param max_results maximal number of results to be returned by Jira
+#' @return deserialised JSON issues data frame
 #' @export
 #' @seealso \code{\link{search_url}}
 #' @examples
 #' 
 #' \dontrun{
 #' 
-#' get_issues(user = "admin")
+#' con <- jira(scheme = "https", host = 'localhost')
+#' get_issues(con,user = "admin")
 #' 
-#' issues <- get_issues(project = "ADM", issue = "ADM-6", verbose = T)
+#' issues <- get_issues(project = "ADM", issue = "ADM-6")
 #' 
 #' ## Get list of issues assigned to user
-#' res <- get_issues(user = "admin" , project_key = getOption("jira_project"))
-#' sapply(res, "[[", "id")
-#' sapply(res, "[[", "key")
+#' res <- get_issues(user = "admin" , project_key = "ACME")
 #' 
-#' ## All projects
-#' res <- get_issues(user = "admin" , project_key = NULL)
+#' ## Issues of admin in all projects
+#' res <- get_issues(user = "admin")
+#' 
+#' ## All issues in project ACME
+#' res <- get_issues(project_key = "ACME")
 #' 
 #' }
 #' 
 #' 
 get_issues <- function(con
                        , user = NULL
-                       , max_results = NULL
-                       , start_at = NULL
+                       , max_results = 50
+                       , start_at = 0
                        , content = NULL
                        , project_key = NULL
                        ){
   
   
+  #### Parameter VALIDATION
+  stopifnot(is.Rjiracon(con))
+  
+  if(!is.numeric(max_results) | max_results < 0){
+    stop("max_results has to be a positive integer.")
+  }
+
+  if(!is.numeric(start_at)){
+    start_at <- 0
+  }
+  #### END OF VALIDATION
+    
   url <- search_url(con)
   if(!is.null(content)){
-    #validate content perhaps. It may be
+    # validate content perhaps. It may be
     #
-    #*all - include all fields
-    #*navigable - include just navigable fields
-    #summary,comment - include just the summary and comments
-    #-comment - include everything except comments (the default is *all for get-issue)
-    #*all,-comment - include everything except comments
+    # *all - include all fields
+    # *navigable - include just navigable fields
+    # summary,comment - include just the summary and comments
+    # -comment - include everything except comments (the default is *all for get-issue)
+    # *all,-comment - include everything except comments
 
     url <- paste0(url, sprintf('fields="%s"&', content))
   }
@@ -89,46 +102,31 @@ get_issues <- function(con
     url <- paste0(url, sprintf('jql=assignee="%s"', project_key))
   }
 
-  if(!is.numeric(start_at)){
-    start_at <- 0
-  }
+
+  # we have to use the pagination to be sure. The maxResults parameter has been limited 
+  # and the number of returned issues may be even lower than requested, depending on Jira
+  # backend configuration.
+
+  #loop in all issues 
+  result <- data.frame()
+  repeat{
   
-  if(!is.null(max_results)){
-    if(!is.numeric(max_results)){
-      stop("max_results has to be a positive integer.")
-    } else {
-      if(max_results > 50 ){
-        #we have to use the pagination to be sure. The maxResults parameter has been limited 
-        #and maybe even partially deactiveated by jira.
-
-        #if max_results if > some-threshold we'll have to loop here
-        url <- paste0(url, sprintf('&startAt=%i&maxResults=%i', start_at, max_results))
-
-        res <- jira_get(url = url, con)
-        if(http_type(res) == "application/json"){
-          res <- jsonlite::fromJSON(content(res, as = "text"))
-          warning(paste("Received", res$maxResults,"of total", res$total, "issues."))
-          res <- res$issues
-        } else{
-          warning("Returning the response object - mime type was not application/json")
-        }
-      }
-    }
-  } else {
-    #the 'max_results is not set' case
-      
-    res <- jira_get(url = url, con)
+    res <- jira_get(url = paste0(url, sprintf('&startAt=%i&maxResults=%i', start_at + nrow(result), max_results - nrow(result))), 
+                    con)
     if(http_type(res) == "application/json"){
-      res <- jsonlite::fromJSON(content(res, as = "text"))
-      res <- res$issues
+      response <- jsonlite::fromJSON(content(res, as = "text"))
+      total <- response$total
+      result <- rbind(result,response$issues)
     } else{
-      warning("Returning the response object - mime type was not application/json")
+      stop("Response mime type was not application/json")
     }
-
-  }
-
   
-  return(res)
+    #do-while condition:
+    if(nrow(result) >= min(max_results, total - start_at)) break
+    if(start_at > total) break
+  } # end of repreat
+
+  return(result)
   
 }
 
