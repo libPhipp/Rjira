@@ -9,8 +9,7 @@ This package is create to work on the API version 2 of Atlassian Jira REST API
 ## Installation
 
 To install package, use
-- git clone, to get a local copy into a folder RJIRA_FOLDER
-- devtools::install(RJIRA_FOLDER), to install the package to your R installation, and
+- devtools::install_github("libPhipp/Rjira"), and
 - library(RJira), to load the package into your R session.
 
 ## Usage
@@ -18,11 +17,11 @@ To install package, use
 At the moment, the most convenient way to connect to a JIRA instance is:
 
 ```
+
 library(Rjira)
-options("jira_user" = "your username")
-options("jira_password" = rstudioapi::askForPassword("Jira password"))
-options("jira_url" = "https://url_to_your_jira_instance.com")
-options("jira_project" = "set a project default here")
+con <- jira(scheme = "https", host = 'localhost', user='username', pass='secret')
+get_projects(con)
+
 ```
 
 ## Changes
@@ -38,12 +37,17 @@ options("jira_project" = "set a project default here")
   - The API support has been extended to supply
     - maxResults
     - startAt
+    
+- Version 0.2.2    
 
+  - get_issues now has an automated depagination
+
+  - default values for user/password/project/... are now stored in a connection object
+  
+  
 ## Roadmap
 
 - Might like to add oauth soon
-- Might like to add automated depagination soon
-- Might want the change the placement of the default values
 - Write vignettes
 
 
