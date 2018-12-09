@@ -1,15 +1,15 @@
 # Rjira
 Friendly JIRA REST API wrapper in R
 
-The 0.2.* version of this packages is an extension of https://github.com/awalker89/Rjira
+This package is an extension of https://github.com/awalker89/Rjira
 written by Alexander Walker and splits off of his version 0.1.1
 
-This package is create to work on the API version 2 of Atlassian Jira REST API
+This package is created to work on the API version 2 of Atlassian Jira REST API
 
 ## Installation
 
-To install package, use
-- devtools::install_github("libPhipp/Rjira"), and
+To install the package, use
+- devtools::install_github("libPhipp/Rjira", ref="dev"), and
 - library(RJira), to load the package into your R session.
 
 ## Usage
@@ -19,8 +19,10 @@ At the moment, the most convenient way to connect to a JIRA instance is:
 ```
 
 library(Rjira)
-con <- jira(scheme = "https", host = 'localhost', user='username', pass='secret')
-get_projects(con)
+jira <- jira(scheme = "https", host = 'localhost', user='username', pass='secret')
+jira %>% get_projects() %>% 
+         select(...) %>% 
+         mutate(...)
 
 ```
 

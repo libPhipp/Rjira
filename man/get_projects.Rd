@@ -4,10 +4,7 @@
 \alias{get_projects}
 \title{Get all projects}
 \usage{
-get_projects(jira_url = getOption("jira_url"),
-  jira_user = getOption("jira_user"),
-  jira_password = getOption("jira_password"),
-  verbose = getOption("jira_verbose"))
+get_projects(con)
 }
 \arguments{
 \item{jira_url}{base JIRA url}

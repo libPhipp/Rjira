@@ -2,44 +2,41 @@
 % Please edit documentation in R/get_functions.R
 \name{get_issues}
 \alias{get_issues}
-\title{Get issues assigned to a user}
+\title{Get all issues matching the parameters}
 \usage{
-get_issues(user = NULL, max_results = NULL,
-  project_key = getOption("jira_project"),
-  jira_url = getOption("jira_url"), jira_user = getOption("jira_user"),
-  jira_password = getOption("jira_password"),
-  verbose = getOption("jira_verbose"))
+get_issues(con, user = NULL, max_results = 50, start_at = 0,
+  content = NULL, project_key = NULL)
 }
 \arguments{
+\item{con}{the RjiraConnection object}
+
 \item{user}{user to search for}
 
-\item{jira_url}{base JIRA url}
-
-\item{jira_user}{username for authentication}
-
-\item{jira_password}{password for authentication}
+\item{max_results}{maximal number of results to be returned by Jira}
 }
 \value{
-character vector of issues
+deserialised JSON issues data frame
 }
 \description{
-Get issues assigned to a user
+Get all issues matching the parameters
 }
 \examples{
 
 \dontrun{
 
-get_issues(user = "admin")
+con <- jira(scheme = "https", host = 'localhost')
+get_issues(con,user = "admin")
 
-issues <- get_issues(project = "ADM", issue = "ADM-6", verbose = T)
+issues <- get_issues(project = "ADM", issue = "ADM-6")
 
 ## Get list of issues assigned to user
-res <- get_issues(user = "admin" , project_key = getOption("jira_project"))
-sapply(res, "[[", "id")
-sapply(res, "[[", "key")
+res <- get_issues(user = "admin" , project_key = "ACME")
 
-## All projects
-res <- get_issues(user = "admin" , project_key = NULL)
+## Issues of admin in all projects
+res <- get_issues(user = "admin")
+
+## All issues in project ACME
+res <- get_issues(project_key = "ACME")
 
 }
 

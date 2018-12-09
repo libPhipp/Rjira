@@ -4,7 +4,7 @@
 \alias{issue_url}
 \title{Get jira issue url}
 \usage{
-issue_url(jira_url = getOption("jira_url"))
+issue_url(con)
 }
 \arguments{
 \item{jira_url}{base url to jira. Defaults to 'jira/'}
